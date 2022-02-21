@@ -1,6 +1,8 @@
 package config
 
-import "os"
+import (
+	"os"
+)
 
 var ConfPath = "./conf/server.conf"
 
@@ -17,12 +19,13 @@ type ServerConf struct {
 	ServerName string
 }
 type RedisConf struct {
-	Addr string
+	Addr     string
+	PassWord string
 }
 type MysqlConf struct{}
 
 func Parse() {
-	_, err := os.ReadFile(ConfPath)
+	ConfBody, err := os.ReadFile(ConfPath)
 	if err != nil {
 		panic(err)
 	}

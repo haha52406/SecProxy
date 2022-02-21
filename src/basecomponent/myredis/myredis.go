@@ -1,23 +1,22 @@
 package myredis
 
 import (
+	"time"
+
 	"github.com/gomodule/redigo/redis"
-	"github.com/yangyulong/secproxy/src/config"
 )
 
 type RedisClient struct {
-	redis.Conn
-	Pool redis.Pool
+	pool *redis.Pool
 }
 
 var (
-	RedisConf = RedisClient{}
-	RedisPool = &redis.Pool{}
+	RedisConf = &RedisClient{}
 )
 
 func newPool(server string) *redis.Pool {
-	RedisPool := redis.Pool{
-		IdleTimeout: 60,
+	RedisPool := &redis.Pool{
+		IdleTimeout: time.Second,
 		MaxActive:   10,
 		MaxIdle:     5,
 		Dial: func() (redis.Conn, error) {
@@ -25,23 +24,31 @@ func newPool(server string) *redis.Pool {
 			if err != nil {
 				return nil, err
 			}
+			_, err = conn.Do("AUTH", "yangyulong")
+			if err != nil {
+				return nil, err
+			}
 			return conn, nil
 		},
 	}
-	return &RedisPool
+	return RedisPool
 }
 func InitRedis() error {
-	RedisPool = newPool(config.SecKillConf.Redisconf.Addr)
+	RedisConf.pool = newPool("127.0.0.1:6379")
 	return nil
 }
 
-func (rc *RedisClient) Do(command string, arges ...string) {
+func (rc *RedisClient) do(command string, arges ...interface{}) (interface{}, error) {
+	conn := rc.pool.Get()
+	defer conn.Close()
 
-}
-func (client RedisClient) Get(key string) (string, error) {
-	return redis.String(client.Do("GET", key))
+	return conn.Do(command, arges...)
 }
 
-func (client RedisClient) Set(key string, value string) (string, error) {
-	return redis.String(client.Do("SET", key, value))
+func (rc *RedisClient) Get(key string) (string, error) {
+	return redis.String(rc.do("get", key))
+}
+
+func (rc *RedisClient) Set(key string, value string) (string, error) {
+	return redis.String(rc.do("SET", key, value))
 }

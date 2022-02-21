@@ -42,6 +42,25 @@ func StartServer() *http.Server {
 	return &s
 }
 func main() {
+	// pool := &redis.Pool{
+	// 	MaxIdle:   4,
+	// 	MaxActive: 4,
+	// 	Dial: func() (redis.Conn, error) {
+	// 		rc, err := redis.Dial("tcp", "127.0.0.1:6379", redis.DialPassword("yangyulong"))
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		return rc, nil
+	// 	},
+	// 	IdleTimeout: time.Second,
+	// }
+	// con := pool.Get()
+	// str, err := redis.String(con.Do("get", "test"))
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// defer con.Close()
+	// log.Println("value: ", str)
 	err := IninServer()
 	if err != nil {
 		panic(err)
